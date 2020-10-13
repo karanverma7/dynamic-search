@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Search</title>
+    <style>
+        body {
+            margin: 0px;
+            background-color: teal;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        }
+        .container {
+            width: 400px;
+            margin: 0px 33%;
+            margin-top: 50px;
+        }
+        .container #search {
+            padding: 20px 30px;
+            width: 100%;
+            border: 10px solid rgb(54, 54, 54);
+            color: rgb(44, 44, 44);
+            background-color: rgba(255, 255, 255, 0.9);
+            outline-style: none;
+            font-size: 26px;
+            text-align: center;
+            margin: auto;
+            position: relative;
+            z-index: 2;
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+        }
+        .container ul {
+            list-style-type: none;
+            margin: auto;
+            
+        }
+        .container ul li {
+            z-index: 2;
+            width: 340px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-size: 20px;
+            color: rgb(54, 54, 54);
+            z-index: 1;
+            box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .container ul li:nth-child(1){
+            transform: perspective(100px) rotateX(-3deg) translateY(-4px); 
+        }
+
+        .container ul li:nth-child(odd){
+            transform: perspective(100px) rotateX(-3deg) translateY(0px); 
+        }
+        .container ul li:nth-child(even){
+            transform: perspective(100px) rotateX(3deg) translateY(-2px); 
+            padding: 25px 30px;
+        }
+
+        .high {
+            background-color: rgb(255, 192, 74);
+        }
+        #credit {
+        color: white;
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        position: absolute;
+        top: 500px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        width: 60%;
+        padding: 7px 0px;
+        font-weight: 550;
+        z-index: 1;
+    }
+
+    @media only screen and (max-width: 600px){
+        #credit {
+            width: 100%;
+        }
+        .container {
+            margin: 40px;
+            
+        }
+        .container #search {
+            width: 60%;
+        }
+        .container ul li {
+            width: 50%;
+            height: 25px;
+            font-size: 14px;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form>
+            <input type="text" id="search" placeholder="City or State">
+        </form>
+        <ul id="suggestions">
+            <li>Filter for a city</li>
+            <li>or a state</li>
+        </ul>
+    </div>
+    <div id="credit"> 
+        <svg width="20" height="20" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M232.819 98.333L270.819 47.5H512V0H0V98.333H232.819ZM171.833 34.833H201.833V64.833H171.833V34.833ZM110.292 34.833H140.292V64.833H110.292V34.833ZM48.75 34.833H78.75V64.833H48.75V34.833Z" fill="#F7F7F7"/>
+            <path d="M285.848 77.5L247.848 128.333H0V512H512V77.5H285.848ZM178.337 381.208L157.124 402.421L72.87 318.167L157.124 233.913L178.337 255.126L115.296 318.167L178.337 381.208ZM218.643 434.901L191.358 422.431L292.358 201.431L319.643 213.901L218.643 434.901ZM354.876 402.42L333.663 381.207L396.704 318.166L333.663 255.125L354.876 233.912L439.13 318.166L354.876 402.42Z" fill="#F7F7F7"/>
+        </svg> &nbsp;
+        Developed by Karan Verma
+    </div>
+</body>
+<Script>
+    const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+
+    const cities = []
+    fetch(endpoint)
+        .then( bulk => bulk.json())
+        .then(data => cities.push(...data))
+
+        function filterData(inputData, cities){
+            return cities.filter( place => {
+                const reGex = new RegExp(inputData, 'gi')
+                return place.city.match(reGex) || place.state.match(reGex)
+            })
+        }
+        
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+        function handleChange() {
+            const result = filterData(this.value, cities)
+            const html = result.map( place => {
+                const reGex = new RegExp(this.value, 'gi')
+                const city = place.city.replace(reGex, `<span class='high'>${this.value}</span>`)
+                const state = place.state.replace(reGex, `<span class='high'>${this.value}</span>`)
+                return `
+                    <li>${city}, ${state} &nbsp;&nbsp;&nbsp; ${numberWithCommas(place.population)}</li>
+                `
+            }).join('')
+            suggestions.innerHTML = html
+        }
+
+        var search = document.querySelector('#search')
+        var suggestions = document.querySelector('#suggestions')
+        search.addEventListener('change', handleChange)
+        search.addEventListener('keyup', handleChange)
+</Script>
+</html>
